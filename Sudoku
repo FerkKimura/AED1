@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <stdbool.h>
+#define N 9
+
+//Verifica a linha
+bool verificaLinha(int tabuleiro[N][N], int linha, int numero) {
+    for (int coluna = 0; coluna < N; coluna++) {
+        if (tabuleiro[linha][coluna] == numero) {
+            return false;
+        }
+    }
+    return true;
+}
+
+//Verifica coluna
+bool verificaColuna(int tabuleiro[N][N], int coluna, int numero) {
+    for (int linha = 0; linha < N; linha++) {
+        if (tabuleiro[linha][coluna] == numero) {
+            return false;
+        }
+    }
+    return true;
+}
+
+//Verifica 3x3
+bool verificaQuadrante(int tabuleiro[N][N], int linhaInicio, int colunaInicio, int numero) {
+    for (int linha = 0; linha < 3; linha++) {
+        for (int coluna = 0; coluna < 3; coluna++) {
+            if (tabuleiro[linhaInicio + linha][colunaInicio + coluna] == numero) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+//Verifica se o número pode ser inserido ou não
+bool ehSeguro(int tabuleiro[N][N], int linha, int coluna, int numero) {
+    return verificaLinha(tabuleiro, linha, numero) &&
+           verificaColuna(tabuleiro, coluna, numero) &&
+           verificaQuadrante(tabuleiro, linha - linha % 3, coluna - coluna % 3, numero);
+}
+
+//Verifica se está correto
+bool verificaSudoku(int tabuleiro[N][N]) {
+    for (int linha = 0; linha < N; linha++) {
+        for (int coluna = 0; coluna < N; coluna++) {
+            if (tabuleiro[linha][coluna] != 0) {
+                if (!ehSeguro(tabuleiro, linha, coluna, tabuleiro[linha][coluna])) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+//Imprime o sudoku
+void imprimeTabuleiro(int tabuleiro[N][N]) {
+    for (int linha = 0; linha < N; linha++) {
+        for (int coluna = 0; coluna < N; coluna++) {
+            printf("%d ", tabuleiro[linha][coluna]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int tabuleiro[N][N];
+    char resposta;
+
+    do {
+        printf("Insira o tabuleiro de Sudoku (use 0 para espaços em branco):\n");
+        for (int linha = 0; linha < N; linha++) {
+            for (int coluna = 0; coluna < N; coluna++) {
+                scanf("%d", &tabuleiro[linha][coluna]);
+            }
+        }
+
+        printf("\nTabuleiro de Sudoku inserido:\n");
+        imprimeTabuleiro(tabuleiro);
+
+        if (verificaSudoku(tabuleiro)) {
+            printf("\nO tabuleiro Sudoku está correto!\n");
+        } else {
+            printf("\nO tabuleiro Sudoku está incorreto!\n");
+        }
+
+        printf("\nDeseja inserir outro tabuleiro de Sudoku? (s/n): ");
+        scanf(" %c", &resposta);
+    } while (resposta == 's' || resposta == 'S');
+
+    return 0;
+}
