@@ -1,0 +1,107 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_EXPR_LENGTH 301
+
+// Estrutura da pilha
+typedef struct {
+    char *array;
+    int top;
+} Stack;
+
+// Funções para operações da pilha
+Stack* createStack(int capacity) {
+    Stack *stack = (Stack*) malloc(sizeof(Stack));
+    stack->top = -1;
+    stack->array = (char*) malloc(capacity * sizeof(char));
+    return stack;
+}
+
+int isEmpty(Stack *stack) {
+    return stack->top == -1;
+}
+
+char peek(Stack *stack) {
+    return stack->array[stack->top];
+}
+
+void push(Stack *stack, char item) {
+    stack->array[++stack->top] = item;
+}
+
+char pop(Stack *stack) {
+    if (!isEmpty(stack))
+        return stack->array[stack->top--];
+    return '$'; // Caractere especial para indicar pilha vazia
+}
+
+// Função para verificar precedência de operadores
+int precedence(char op) {
+    if (op == '^')
+        return 3;
+    else if (op == '*' || op == '/')
+        return 2;
+    else if (op == '+' || op == '-')
+        return 1;
+    else
+        return -1;
+}
+
+// Função para converter expressão infixa para posfixa
+void infixToPostfix(char *expression) {
+    int length = strlen(expression);
+    Stack *stack = createStack(length);
+    int i, k;
+    
+    for (i = 0, k = -1; expression[i]; ++i) {
+        // Se o caractere atual é um operando (letra ou número), adiciona ao resultado
+        if ((expression[i] >= 'a' && expression[i] <= 'z') || (expression[i] >= 'A' && expression[i] <= 'Z') || (expression[i] >= '0' && expression[i] <= '9')) {
+            expression[++k] = expression[i];
+        }
+        // Se o caractere atual é um parêntese aberto, empilha
+        else if (expression[i] == '(') {
+            push(stack, expression[i]);
+        }
+        // Se o caractere atual é um parêntese fechado, desempilha até encontrar o parêntese aberto correspondente
+        else if (expression[i] == ')') {
+            while (!isEmpty(stack) && peek(stack) != '(')
+                expression[++k] = pop(stack);
+            if (!isEmpty(stack) && peek(stack) != '(')
+                return; // Expressão inválida
+            else
+                pop(stack); // Desempilha o parêntese aberto
+        }
+        // Se o caractere atual é um operador
+        else {
+            while (!isEmpty(stack) && precedence(expression[i]) <= precedence(peek(stack)))
+                expression[++k] = pop(stack);
+            push(stack, expression[i]);
+        }
+    }
+
+    // Desempilha todos os operadores restantes da pilha
+    while (!isEmpty(stack))
+        expression[++k] = pop(stack);
+
+    expression[++k] = '\0'; // Adiciona o caractere nulo ao final da expressão posfixa
+}
+
+int main() {
+    int N;
+    scanf("%d", &N);
+    getchar(); // Para capturar o caractere de nova linha após o valor de N
+    
+    for (int i = 0; i < N; ++i) {
+        char infixExpression[MAX_EXPR_LENGTH];
+        fgets(infixExpression, MAX_EXPR_LENGTH, stdin);
+
+        // Remover o caractere de nova linha (\n) da entrada
+        infixExpression[strcspn(infixExpression, "\n")] = '\0';
+
+        infixToPostfix(infixExpression);
+        printf("%s\n", infixExpression);
+    }
+
+    return 0;
+}
